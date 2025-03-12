@@ -3,7 +3,7 @@
 <?php echo form_open_multipart(base_url('/order/add_to_cart'));?>
     <div class="mb-3">
     <input type="hidden" name="product_id" value="<?php echo $id;?>">
-        <input type="hidden" name="nameMenu" value="<?php echo $nameTH;?>">
+        <input type="hidden" name="nameMenu" value="<?php echo $nameEN;?>">
         <input type="hidden" name="formtype" value="<?php echo $formtype;?>">
         <label class="form-label fw-bold" for="sweetness">ความหวาน</label>
         <div class="form-check">
@@ -53,7 +53,7 @@
         </div>
 </div>
         <div class="mb-3 col-7">
-            <button class="btn btn-success" type="submit" name="submit" id="orderSummary">ใส่ตระกร้า : 40 บาท</button>
+            <button class="btn btn-success" type="submit" name="submit" id="orderSummary">เริ่มต้น <?php echo $basePrice;?> บาท</button>
             <input type="hidden" name="price" id="price">
         </div>
     </div>
@@ -71,13 +71,13 @@
         var milk = milkInput ? parseInt(milkInput.value) : 0; // Default to 0 if no milk is selected
    
         var quantity = parseInt(document.getElementById('quantity').value);
-        var basePrice = 40;
+        var basePrice = <?php echo $basePrice;?>;
         var totalCost = (milk + basePrice) * quantity;
 
          console.log("Milk price: " + milk);
     console.log("Quantity: " + quantity);
 
-  
+    console.log("BasePrice: " + basePrice);
     console.log("Total cost: " + totalCost);
     document.getElementById('price').value = totalCost
     document.getElementById("orderSummary").innerHTML = "ใส่ตระกร้า : " + totalCost.toFixed(2) + " บาท";

@@ -24,69 +24,7 @@ class Order extends CI_Controller {
         $this->load->helper(array('url'));
 		$this->load->model(array('Login_database'));
     }
-	// function add_to_cart(){
-	// 	$formtype = $this->input->post('formtype');
-	// 	if($formtype == 'coffee_milk_v'){
-	// 		$price_per_glass = $this->input->post('price') / $this->input->post('quantity');
-	// 		$data = array(
-	// 			'id' => $this->input->post('product_id'),
-	// 			'qty' => $this->input->post('quantity'),
-	// 			'price' => $price_per_glass,
-	// 			'name' => $this->input->post('nameMenu'),
-	// 			'type' => "Coffee Milk",
-	// 			'detail' => array(
-	// 				'espressoShots' => $this->input->post('espressoDescription'),
-	// 				'milk' => $this->input->post('milkname'),
-	// 				'sweetness' => $this->input->post('sweetness')
-	// 			)
-	// 		);
-	// 		print_r($data);
-	// 	}
-	// 	else if($formtype == 'black_coffee_v'){
-	// 		$price_per_glass = $this->input->post('price') / $this->input->post('quantity');
-	// 		$data = array(
-	// 			'id' => $this->input->post('product_id'),
-	// 			'qty' => $this->input->post('quantity'),
-	// 			'price' => $price_per_glass,
-	// 			'name' => $this->input->post('nameMenu'),
-	// 			'type' => "Black Coffee",
-	// 			'detail' => array(
-	// 				'espressoShots' => $this->input->post('espressoDescription')
-	// 			)
-	// 		);
-	// 		print_r($data);
-	// 	}
-	// 	else if($formtype == 'tea_v'){
-	// 		$price_per_glass = $this->input->post('price') / $this->input->post('quantity');
-	// 		$data = array(
-	// 			'id' => $this->input->post('product_id'),
-	// 			'qty' => $this->input->post('quantity'),
-	// 			'price' => $price_per_glass,
-	// 			'name' => $this->input->post('nameMenu'),
-	// 			'type' => "Tea",
-	// 			'detail' => array(
-	// 				'milk' => $this->input->post('milkname'),
-	// 				'sweetness' => $this->input->post('sweetness')
-	// 			)
-	// 		);
-	// 		print_r($data);
-	// 	}
-		
-	// 	//$this->cart->insert($data);
-	// 	$this->cart->insert($data);
-	// 	//redirect(base_url('/menu'));
-		
-		
-    // 	// Retrieve and display the cart contents
-	//     $cart_items = $this->cart->contents();
-    // 	echo "<pre>";
-    // 		print_r($cart_items); // This will display all items in the cart
-    // 	echo "</pre>";
-
-
-
-
-	// }
+	
 	function add_to_cart()
 {
     $formtype = $this->input->post('formtype');
@@ -139,24 +77,112 @@ class Order extends CI_Controller {
 
     if (!empty($data)) {
         // Insert item into cart
-        $this->cart->insert($data);
-
+		if (!$this->cart->insert($data)) {
+			log_message('error', 'Cart Insert Failed. Data: ' . print_r($data, true));
+			echo "Error: Failed to insert item into cart. Check logs.";
+		} else {
+			echo "Item added successfully!";
+		}
+		redirect(base_url('/menu'));
+		
         // Debug: Print cart contents
-        $cart_items = $this->cart->contents();
-        echo "<pre>";
-        print_r($cart_items);
-        echo "</pre>";
+        // $cart_items = $this->cart->contents();
+        // echo "<pre>";
+        // print_r($cart_items);
+        // echo "</pre>";
     } else {
         echo "Error: Missing data or invalid formtype.";
     }
 }
 
-	public function show_cart() {
-		$this->show_cart();
+	function cart(){
+		$cart_items = $this->cart->contents();
+		$total = $this->cart->total(); // Gets the total price
+		$username = $this->read_user_information();
+		$data = array(
+			'cart_items' => $cart_items,
+			'total' => $total,
+			'content' => "Order/cart_v",
+			'customer_username' => $username->username
+		);
+		
+		$this->load->view('welcome_message', $data);
+	}
+	public function remove_item($rowid) {
+		$cart = $this->cart->contents();
+		if (isset($cart[$rowid])) {
+			$data = [
+				'rowid' => $rowid,
+				'qty' => 0
+			];
+			$this->cart->update($data);
+		}
+		redirect(base_url('/order/cart'));
 	}
 	public function clear_cart() {
 		$this->cart->destroy(); // Clears all items in the cart
-		redirect(base_url('Order/show_cart')); // Redirect to cart page or any other page you prefer
+		redirect(base_url('Order/cart')); // Redirect to cart page or any other page you prefer
 	}
-	
+    public function checkout() {
+        $this->load->model('coolcool_menu');
+        // Get cart data
+        $cart_items = $this->cart->contents();
+        $unixtimestamp = time();
+        $order_data = array(
+            'create_date' => $unixtimestamp,
+            //'username' => $username,
+            'order_id' => $unixtimestamp,
+            'total' => $this->cart->total()
+        );
+        foreach($cart_items as $item){
+            $details = '';
+            foreach($item['detail'] as $option_name => $option_value){
+                $details .= $option_name . ': ' . $option_value . ', ';
+            }
+            $order_item = array(
+                'order_id' => $unixtimestamp,
+                'name' => $item['name'],
+                'qty' => $item['qty'],
+                'detail' => $details,
+                'sub_total' => $item['subtotal']
+            );
+            print_r($order_item);
+        }
+        
+        $this->load->model('coolcool_menu');
+        /*if($this->coolcool_menu->create_order($order_data)){
+            foreach ($cart_items as $item) {
+                // Combine details into a string
+                $details = '';
+                foreach ($item['detail'] as $option_name => $option_value) {
+                    $details .= $option_name . ': ' . $option_value . ', ';
+                }
+                $details = rtrim($details, ', '); // Remove the last comma and space
+            
+                // Create the order item array
+                $order_item = array(
+                    'order_id' => $unixtimestamp,
+                    'name' => $item['name'],
+                    'qty' => $item['qty'],
+                    'detail' => $details,
+                    'sub_total' => $item['subtotal']
+                );
+            
+                // Print the array for debugging
+                print_r($order_item);
+                $this->coolcool_menu->add_order_item($order_item);
+            }
+            
+            echo "tset";
+            // Clear the cart and redirect to success page
+            $this->cart->destroy();
+            redirect('/Order/success');
+        }
+        // else{
+
+        // }*/
+    
+        
+    }
+    
 }

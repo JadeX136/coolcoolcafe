@@ -52,8 +52,8 @@ class Menu extends CI_Controller {
                 $data = array(
                     'customer_username' => $username->username,
                     'id' => $row->product_id,
-                    'title' => "{$row->nameTH} | coolcool.com",
-                    'HeadH1' => "{$row->nameTH}",
+                    'title' => "{$row->nameEN} | coolcool.com",
+                    'HeadH1' => "{$row->nameEN}",
                     'formtype' => "{$row->formtype}",
                     'query' => $this->db->get_where('coolcool_menu',array('product_id' => $product_id))->result(),
                     'content' => "Menu/Menu_detail_v"

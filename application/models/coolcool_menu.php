@@ -24,6 +24,16 @@ class coolcool_menu extends CI_Model{
         return true;
     }
 
-    
+    public function create_order($order_data) {
+        // Insert order data into the 'orders' table
+        $this->db->insert('coolcool_order', $order_data);
+          // Return the inserted order_id
+    }
+
+    // Create order items function
+    public function add_order_item($order_item) {
+        // Insert each order item into the 'coolcool_order_items' table
+         $this->db->insert('coolcool_order_items', $order_item);
+    }
 }
 ?>

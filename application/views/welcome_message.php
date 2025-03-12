@@ -89,6 +89,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		.progress-container {width: 100%;height: 8px;background: #ccc;}
     .progress-bar {height: 8px;background: #b28e3b;width: 0%;}
     .scrollable-menu {height: auto;max-height: 500px;overflow-x: hidden;}
+    @media (max-width: 576px) {
+    .card-text {
+        font-size: 12px; /* Full width on small screens */
+    }
+}
 	</style>
 </head>
 <body>
